@@ -1,5 +1,7 @@
 import pygame
 from dialogs.main import START_DIALOG
+from characters.main import inventory, skill_tree
+from constants.main import SKILLS, EQUIPMENTS
 
 # INIT PYGAME
 pygame.init()
@@ -49,7 +51,10 @@ def _process_comand(event):
         selected_option = (options.index(referenced_option) + step) % len(options)
         referenced_option = options[selected_option]
     elif event.key == pygame.K_RETURN:
-        choice = actual_dialog[dialog_index]["options"][referenced_option]['choice']
+        # Handle consequencies of the selected option
+        _handle_results(actual_dialog[dialog_index]["options"][referenced_option])
+        
+        choice = actual_dialog[dialog_index]["options"][referenced_option]['next']
         full_text = actual_dialog[choice]["texts"]
         dialog_index = choice
         _reset_state_vars()
@@ -59,7 +64,26 @@ def _process_comand(event):
     # TODO: Maybe this will not be necessary
     elif phase == 'waiting' and event.key == pygame.K_SPACE:
         running = False
-
+        
+def _handle_results(option):
+    global skill_tree, inventory
+    
+    for result in option['results']:
+        if result['type'] == 'skill':
+            obj = SKILLS[result['id']]
+            skill_tree.append({
+                "skill_id": result['id'], 
+                "skill_name": obj['name'], 
+                "level": 1, 
+                "succed_rate": obj['succed_rate'], 
+                "cost": obj['cost']})
+        elif result['type'] == 'item':
+            obj = EQUIPMENTS[result['id']]
+            inventory.append({
+                "item_id": result['id'], 
+                "item_name": obj['name'], 
+                "amount": 1})
+            
 def _handle_line_skip():
     global actual_line, full_text, actual_text, char_index
     

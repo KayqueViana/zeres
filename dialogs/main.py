@@ -16,9 +16,12 @@ START_DIALOG = {
             "habilidades com..."
         ],
         "options": {
-            "Mecânica": {"id": 0, "choice": "_class_chosed"},
-            "Química": {"id": 1, "choice": "_class_chosed"},
-            "Combate": {"id": 2, "choice": "_class_chosed"},
+            "Mecânica": {"id": 0, "next": "_class_chosed", "results": [
+                    {"type": "skill", "id": "0"},
+                    {"type": "item", "id": "0"},
+                ]},
+            "Química": {"id": 1, "next": "_class_chosed"},
+            "Combate": {"id": 2, "next": "_class_chosed"},
         }
     },
     "_class_chosed": {
@@ -30,10 +33,10 @@ START_DIALOG = {
             "O que você pretender levar consigo??"
         ],
         "options": {
-            "Conhecimento": {"id": 0, "choice": "_item_chosed"},
-            "Proteção": {"id": 1, "choice": "_item_chosed"},
-            "Sobrevivência": {"id": 2, "choice": "_item_chosed"},
-            "Lembranças": {"id": 3, "choice": "_item_chosed"},
+            "Conhecimento": {"id": 0, "next": "_item_chosed"},
+            "Proteção": {"id": 1, "next": "_item_chosed"},
+            "Sobrevivência": {"id": 2, "next": "_item_chosed"},
+            "Lembranças": {"id": 3, "next": "_item_chosed"},
         }
     },
     "_item_chosed": {
