@@ -24,6 +24,11 @@ START_DIALOG = {
             "Combate": {"id": 2, "next": "_class_chosed"},
         }
     },
+    "warning": {
+        "id": 3,
+        "texts": [],
+        "options": {"Continuar": {"id": 0, "next": "", 'results': []}} 
+    },
     "_class_chosed": {
         "id": 1,
         "texts": [

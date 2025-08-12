@@ -1,7 +1,7 @@
 import pygame
 from dialogs.main import START_DIALOG
 from characters.main import inventory, skill_tree
-from constants.main import SKILLS, EQUIPMENTS
+from constants.main import SKILLS, EQUIPMENTS, CUSTOM_WARNINGS
 
 # INIT PYGAME
 pygame.init()
@@ -20,8 +20,10 @@ txt_speed = 0.05
 # STATE VARIABLES
 actual_dialog = START_DIALOG
 dialog_index = "initial"
+stored_next_path = ""
 full_text = actual_dialog[dialog_index]["texts"]
 actual_text = []
+pending_texts = []
 actual_line = 0
 timer = 0
 char_index = 0
@@ -41,7 +43,7 @@ def _reset_state_vars():
     
 # PROCCESS MAIN COMMANDS
 def _process_comand(event):
-    global actual_dialog, selected_option, dialog_index, full_text, phase, running
+    global actual_dialog, selected_option, dialog_index, full_text, phase, running,stored_next_path
     
     # Create a list with options indexes
     options = list(actual_dialog[dialog_index]["options"].keys())
@@ -51,12 +53,25 @@ def _process_comand(event):
         selected_option = (options.index(referenced_option) + step) % len(options)
         referenced_option = options[selected_option]
     elif event.key == pygame.K_RETURN:
+        if phase == "typing":
+            return
+        
         # Handle consequencies of the selected option
         _handle_results(actual_dialog[dialog_index]["options"][referenced_option])
-        
+
+        # Store next for options exhibition
         choice = actual_dialog[dialog_index]["options"][referenced_option]['next']
-        full_text = actual_dialog[choice]["texts"]
-        dialog_index = choice
+        if choice:
+            stored_next_path = choice
+        
+        if pending_texts:
+            full_text = []
+            full_text.extend(pending_texts)
+            pending_texts.clear()
+            dialog_index = "warning"
+        else:
+            full_text = actual_dialog[stored_next_path]["texts"]
+            dialog_index = stored_next_path
         _reset_state_vars()
     # Skip line to the end or close the game
     elif phase == 'typing' and event.key == pygame.K_SPACE:
@@ -64,6 +79,17 @@ def _process_comand(event):
     # TODO: Maybe this will not be necessary
     elif phase == 'waiting' and event.key == pygame.K_SPACE:
         running = False
+        
+def _handle_custom_warning(warning_id, result, amount=0):
+    global full_text, phase
+    
+    if '%s' in CUSTOM_WARNINGS[warning_id]:
+        text = CUSTOM_WARNINGS[warning_id] % amount
+    else:
+        text = CUSTOM_WARNINGS[warning_id]
+        
+    # Insere o aviso no fluxo do typewriter
+    pending_texts.append(f"{text} {result}")
         
 def _handle_results(option):
     global skill_tree, inventory
@@ -77,12 +103,14 @@ def _handle_results(option):
                 "level": 1, 
                 "succed_rate": obj['succed_rate'], 
                 "cost": obj['cost']})
+            _handle_custom_warning("0", obj['name'])
         elif result['type'] == 'item':
             obj = EQUIPMENTS[result['id']]
             inventory.append({
                 "item_id": result['id'], 
                 "item_name": obj['name'], 
                 "amount": 1})
+            _handle_custom_warning("1", obj['name'], 1)
             
 def _handle_line_skip():
     global actual_line, full_text, actual_text, char_index
